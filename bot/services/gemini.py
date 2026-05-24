@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from google import genai
 from google.genai import types
@@ -55,26 +56,33 @@ Rules:
 _client = genai.Client(api_key=GEMINI_API_KEY)
 
 
+def _generate(contents, config) -> str:
+    response = _client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=contents,
+        config=config,
+    )
+    text = response.text.strip()
+    if len(text) > 4000:
+        text = text[:4000] + "..."
+    return text
+
+
 async def get_response(user_message: str, lang: str = "ru", topic: str = None) -> str:
     context_prefix = f"[lang={lang}]"
     if topic:
         context_prefix += f" [topic={topic}]"
 
     user_content = f"{context_prefix}\n\n{user_message}"
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        temperature=0.7,
+        max_output_tokens=2048,
+    )
 
     try:
-        response = _client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=user_content,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.7,
-                max_output_tokens=2048,
-            ),
-        )
-        text = response.text.strip()
-        if len(text) > 4000:
-            text = text[:4000] + "..."
+        loop = asyncio.get_event_loop()
+        text = await loop.run_in_executor(None, lambda: _generate(user_content, config))
         return text
     except Exception as e:
         logger.error("Gemini error: %s", e)
@@ -87,23 +95,19 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
         context_prefix += f" [topic={topic}]"
 
     instruction = f"{context_prefix}\n\nПользователь отправил голосовое сообщение. Сначала пойми что он сказал, затем ответь как обычно."
+    contents = [
+        instruction,
+        types.Part.from_bytes(data=audio_bytes, mime_type="audio/ogg"),
+    ]
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        temperature=0.7,
+        max_output_tokens=2048,
+    )
 
     try:
-        response = _client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=[
-                instruction,
-                types.Part.from_bytes(data=audio_bytes, mime_type="audio/ogg"),
-            ],
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.7,
-                max_output_tokens=2048,
-            ),
-        )
-        text = response.text.strip()
-        if len(text) > 4000:
-            text = text[:4000] + "..."
+        loop = asyncio.get_event_loop()
+        text = await loop.run_in_executor(None, lambda: _generate(contents, config))
         return text
     except Exception as e:
         logger.error("Gemini audio error: %s", e)
