@@ -54,10 +54,9 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     if topic:
         context_prefix += f" [topic={topic}]"
 
-    prompt = f"{context_prefix}\n\n{user_message}"
+    full_prompt = f"{SYSTEM_PROMPT}\n\n{context_prefix}\n\n{user_message}"
 
     try:
-        full_prompt = f"{SYSTEM_PROMPT}\n\n---\n\n{prompt}"
         response = _client.models.generate_content(
             model=GEMINI_MODEL,
             contents=full_prompt,
