@@ -3,7 +3,7 @@ from google import genai
 from google.genai import types
 from config import GEMINI_API_KEY
 
-GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_MODEL = "gemini-2.0-flash-lite"
 GEMINI_AUDIO_MODEL = "gemini-flash-latest"
 
 logger = logging.getLogger(__name__)
@@ -61,10 +61,8 @@ Rules:
 AUDIO_QUOTA_EXCEEDED = "__AUDIO_QUOTA_EXCEEDED__"
 QUOTA_EXCEEDED = "__QUOTA_EXCEEDED__"
 
-# v1 — for gemini-1.5-flash (1500 req/day free)
-_client_v1 = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(api_version="v1"))
-# v1beta — for gemini-flash-latest audio support
 _client_v1beta = genai.Client(api_key=GEMINI_API_KEY)
+_client_v1 = _client_v1beta  # gemini-2.0-flash-lite works on v1beta
 
 
 async def get_response(user_message: str, lang: str = "ru", topic: str = None) -> str:
@@ -72,8 +70,9 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     if topic:
         context_prefix += f" [topic={topic}]"
 
-    user_content = f"{SYSTEM_PROMPT}\n\n{context_prefix}\n\n{user_message}"
+    user_content = f"{context_prefix}\n\n{user_message}"
     config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
         temperature=0.7,
         max_output_tokens=2048,
     )
