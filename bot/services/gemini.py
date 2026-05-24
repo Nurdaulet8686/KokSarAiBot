@@ -72,9 +72,8 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     if topic:
         context_prefix += f" [topic={topic}]"
 
-    user_content = f"{context_prefix}\n\n{user_message}"
+    user_content = f"{SYSTEM_PROMPT}\n\n{context_prefix}\n\n{user_message}"
     config = types.GenerateContentConfig(
-        system_instruction=SYSTEM_PROMPT,
         temperature=0.7,
         max_output_tokens=2048,
     )
