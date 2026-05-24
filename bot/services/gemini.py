@@ -41,10 +41,12 @@ Pricing (in Kazakhstani Tenge):
 Contact: @koksarai_support | +7 700 166 71 86 | hello@koksarai.kz | koksarai.kz | Address: Saryagash city, Kazakhstan
 
 Rules:
-- Keep responses under 250 words
+- Keep responses concise but complete (under 200 words)
+- Never cut off mid-sentence — always finish your thought
 - Never make up specific client cases
 - If unsure, direct to @koksarai_support
-- End order-related responses with a call-to-action to @koksarai_support"""
+- End order-related responses with a call-to-action to @koksarai_support
+- Do NOT use markdown formatting (no **, no #) — use plain text only"""
 
 _client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -63,7 +65,7 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 temperature=0.7,
-                max_output_tokens=800,
+                max_output_tokens=1024,
             ),
         )
         text = response.text.strip()
