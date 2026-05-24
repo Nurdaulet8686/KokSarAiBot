@@ -99,10 +99,10 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
     if topic:
         context_prefix += f" [topic={topic}]"
 
-    instruction = f"{context_prefix}\n\nПользователь отправил голосовое сообщение. Сначала пойми что он сказал, затем ответь как обычно."
+    instruction = f"{context_prefix}\n\nThis is a voice message. Listen to the audio, understand what the user said, and respond accordingly."
     contents = [
-        instruction,
-        types.Part.from_bytes(data=audio_bytes, mime_type="audio/ogg"),
+        types.Part.from_bytes(data=audio_bytes, mime_type="audio/ogg; codecs=opus"),
+        types.Part.from_text(text=instruction),
     ]
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
