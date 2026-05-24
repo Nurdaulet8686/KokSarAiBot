@@ -45,7 +45,7 @@ Rules:
 - If unsure, direct to @koksarai_support
 - End order-related responses with a call-to-action to @koksarai_support"""
 
-genai.configure(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY, transport="rest")
 
 _model = genai.GenerativeModel(
     model_name=GEMINI_MODEL,
