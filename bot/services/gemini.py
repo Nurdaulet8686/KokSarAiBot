@@ -1,5 +1,6 @@
 import logging
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from config import GEMINI_API_KEY, GEMINI_MODEL
 
 logger = logging.getLogger(__name__)
@@ -45,16 +46,7 @@ Rules:
 - If unsure, direct to @koksarai_support
 - End order-related responses with a call-to-action to @koksarai_support"""
 
-genai.configure(api_key=GEMINI_API_KEY, transport="rest")
-
-_model = genai.GenerativeModel(
-    model_name=GEMINI_MODEL,
-    system_instruction=SYSTEM_PROMPT,
-    generation_config=genai.GenerationConfig(
-        temperature=0.7,
-        max_output_tokens=800,
-    ),
-)
+_client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 async def get_response(user_message: str, lang: str = "ru", topic: str = None) -> str:
@@ -65,7 +57,15 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     prompt = f"{context_prefix}\n\n{user_message}"
 
     try:
-        response = await _model.generate_content_async(prompt)
+        response = _client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.7,
+                max_output_tokens=800,
+            ),
+        )
         text = response.text.strip()
         if len(text) > 4000:
             text = text[:4000] + "..."
