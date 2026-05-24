@@ -3,7 +3,7 @@ from google import genai
 from google.genai import types
 from config import GEMINI_API_KEY
 
-GEMINI_MODEL = "gemini-flash-latest"
+GEMINI_MODEL = "gemini-1.5-flash"
 GEMINI_AUDIO_MODEL = "gemini-flash-latest"
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,10 @@ Rules:
 AUDIO_QUOTA_EXCEEDED = "__AUDIO_QUOTA_EXCEEDED__"
 QUOTA_EXCEEDED = "__QUOTA_EXCEEDED__"
 
-_client = genai.Client(api_key=GEMINI_API_KEY)
+# v1 — for gemini-1.5-flash (1500 req/day free)
+_client_v1 = genai.Client(api_key=GEMINI_API_KEY, http_options={"api_version": "v1"})
+# v1beta — for gemini-flash-latest audio support
+_client_v1beta = genai.Client(api_key=GEMINI_API_KEY)
 
 
 async def get_response(user_message: str, lang: str = "ru", topic: str = None) -> str:
@@ -77,7 +80,7 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     )
 
     try:
-        response = await _client.aio.models.generate_content(
+        response = await _client_v1.aio.models.generate_content(
             model=GEMINI_MODEL,
             contents=user_content,
             config=config,
@@ -110,7 +113,7 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
     )
 
     try:
-        response = await _client.aio.models.generate_content(
+        response = await _client_v1beta.aio.models.generate_content(
             model=GEMINI_AUDIO_MODEL,
             contents=contents,
             config=config,
