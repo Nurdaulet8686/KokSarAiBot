@@ -46,7 +46,7 @@ Rules:
 - If unsure, direct to @koksarai_support
 - End order-related responses with a call-to-action to @koksarai_support"""
 
-_client = genai.Client(api_key=GEMINI_API_KEY)
+_client = genai.Client(api_key=GEMINI_API_KEY, http_options={"api_version": "v1"})
 
 
 async def get_response(user_message: str, lang: str = "ru", topic: str = None) -> str:
