@@ -83,6 +83,15 @@ def build_faq_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(buttons)
 
 
+def build_ai_response_keyboard(lang: str) -> InlineKeyboardMarkup:
+    wa_label = "💬 WhatsApp-қа жазу" if lang == "kz" else "💬 Написать в WhatsApp"
+    menu_label = "⬅️ Басты мәзір" if lang == "kz" else "⬅️ Главное меню"
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(wa_label, url=WHATSAPP_URL)],
+        [InlineKeyboardButton(menu_label, callback_data="back_menu")],
+    ])
+
+
 def build_back_faq_keyboard(lang: str) -> InlineKeyboardMarkup:
     faq_label = "⬅️ FAQ-қа оралу" if lang == "kz" else "⬅️ Назад к FAQ"
     menu_label = "⬅️ Басты мәзір" if lang == "kz" else "⬅️ Главное меню"

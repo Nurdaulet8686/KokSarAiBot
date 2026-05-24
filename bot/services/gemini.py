@@ -69,7 +69,7 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 temperature=0.7,
-                max_output_tokens=1024,
+                max_output_tokens=2048,
             ),
         )
         text = response.text.strip()
@@ -98,7 +98,7 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 temperature=0.7,
-                max_output_tokens=1024,
+                max_output_tokens=2048,
             ),
         )
         text = response.text.strip()

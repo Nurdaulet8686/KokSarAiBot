@@ -1,9 +1,9 @@
-import io
 from telegram import Update
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 from bot.services.gemini import get_response, get_response_from_audio
 from bot.data.messages import MESSAGES
+from bot.keyboards.inline import build_ai_response_keyboard
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -20,7 +20,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if response is None:
         await update.message.reply_text(MESSAGES[lang]["ai_error"])
     else:
-        await update.message.reply_text(response)
+        await update.message.reply_text(
+            response,
+            reply_markup=build_ai_response_keyboard(lang),
+        )
 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -48,4 +51,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if response is None:
         await update.message.reply_text(MESSAGES[lang]["ai_error"])
     else:
-        await update.message.reply_text(response)
+        await update.message.reply_text(
+            response,
+            reply_markup=build_ai_response_keyboard(lang),
+        )
