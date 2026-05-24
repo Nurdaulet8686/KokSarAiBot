@@ -2,7 +2,9 @@ import asyncio
 import logging
 from google import genai
 from google.genai import types
-from config import GEMINI_API_KEY, GEMINI_MODEL
+from config import GEMINI_API_KEY
+
+GEMINI_MODEL = "gemini-1.5-flash"
 
 logger = logging.getLogger(__name__)
 
