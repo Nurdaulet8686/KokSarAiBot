@@ -1,10 +1,9 @@
-import asyncio
 import logging
 from google import genai
 from google.genai import types
 from config import GEMINI_API_KEY
 
-GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_MODEL = "gemini-flash-latest"
 GEMINI_AUDIO_MODEL = "gemini-flash-latest"
 
 logger = logging.getLogger(__name__)
@@ -60,20 +59,9 @@ Rules:
 - Do NOT use markdown formatting (no **, no #) — use plain text only"""
 
 AUDIO_QUOTA_EXCEEDED = "__AUDIO_QUOTA_EXCEEDED__"
+QUOTA_EXCEEDED = "__QUOTA_EXCEEDED__"
 
 _client = genai.Client(api_key=GEMINI_API_KEY)
-
-
-def _generate(contents, config, model=None) -> str:
-    response = _client.models.generate_content(
-        model=model or GEMINI_MODEL,
-        contents=contents,
-        config=config,
-    )
-    text = response.text.strip()
-    if len(text) > 4000:
-        text = text[:4000] + "..."
-    return text
 
 
 async def get_response(user_message: str, lang: str = "ru", topic: str = None) -> str:
@@ -89,11 +77,19 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     )
 
     try:
-        loop = asyncio.get_running_loop()
-        text = await loop.run_in_executor(None, lambda: _generate(user_content, config))
+        response = await _client.aio.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=user_content,
+            config=config,
+        )
+        text = response.text.strip()
+        if len(text) > 4000:
+            text = text[:4000] + "..."
         return text
     except Exception as e:
         logger.error("Gemini error: %s", e)
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            return QUOTA_EXCEEDED
         return None
 
 
@@ -114,8 +110,14 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
     )
 
     try:
-        loop = asyncio.get_running_loop()
-        text = await loop.run_in_executor(None, lambda: _generate(contents, config, model=GEMINI_AUDIO_MODEL))
+        response = await _client.aio.models.generate_content(
+            model=GEMINI_AUDIO_MODEL,
+            contents=contents,
+            config=config,
+        )
+        text = response.text.strip()
+        if len(text) > 4000:
+            text = text[:4000] + "..."
         return text
     except Exception as e:
         logger.error("Gemini audio error: %s", e)
