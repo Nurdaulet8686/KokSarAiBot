@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
-from bot.services.gemini import get_response, get_response_from_audio
+from bot.services.gemini import get_response, get_response_from_audio, AUDIO_QUOTA_EXCEEDED
 from bot.data.messages import MESSAGES
 from bot.keyboards.inline import build_ai_response_keyboard
 
@@ -47,7 +47,13 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     except Exception:
         response = None
 
-    if response is None:
+    if response == AUDIO_QUOTA_EXCEEDED:
+        quota_msg = {
+            "kz": "🎤 Дауыстық хабар лимиті таусылды. Сұрағыңызды мәтін арқылы жазасыз ба? ✍️",
+            "ru": "🎤 Лимит голосовых сообщений исчерпан. Напишите ваш вопрос текстом? ✍️",
+        }
+        await update.message.reply_text(quota_msg.get(lang, quota_msg["ru"]))
+    elif response is None:
         await update.message.reply_text(MESSAGES[lang]["ai_error"])
     else:
         await update.message.reply_text(

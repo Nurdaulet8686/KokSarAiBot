@@ -59,6 +59,8 @@ Rules:
 - End order-related responses with a call-to-action to @koksarai_support
 - Do NOT use markdown formatting (no **, no #) — use plain text only"""
 
+AUDIO_QUOTA_EXCEEDED = "__AUDIO_QUOTA_EXCEEDED__"
+
 _client = genai.Client(api_key=GEMINI_API_KEY)
 
 
@@ -117,4 +119,6 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
         return text
     except Exception as e:
         logger.error("Gemini audio error: %s", e)
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            return AUDIO_QUOTA_EXCEEDED
         return None
