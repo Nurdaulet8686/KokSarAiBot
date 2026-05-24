@@ -79,3 +79,32 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     except Exception as e:
         logger.error("Gemini error: %s", e)
         return None
+
+
+async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: str = None) -> str:
+    context_prefix = f"[lang={lang}]"
+    if topic:
+        context_prefix += f" [topic={topic}]"
+
+    instruction = f"{context_prefix}\n\nПользователь отправил голосовое сообщение. Сначала пойми что он сказал, затем ответь как обычно."
+
+    try:
+        response = _client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=[
+                instruction,
+                types.Part.from_bytes(data=audio_bytes, mime_type="audio/ogg"),
+            ],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.7,
+                max_output_tokens=1024,
+            ),
+        )
+        text = response.text.strip()
+        if len(text) > 4000:
+            text = text[:4000] + "..."
+        return text
+    except Exception as e:
+        logger.error("Gemini audio error: %s", e)
+        return None

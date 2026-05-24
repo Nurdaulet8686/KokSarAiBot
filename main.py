@@ -15,7 +15,7 @@ from bot.handlers.menu import (
     back_menu_callback,
     change_lang_callback,
 )
-from bot.handlers.ai_chat import handle_message
+from bot.handlers.ai_chat import handle_message, handle_voice
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -40,6 +40,7 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(change_lang_callback, pattern=r"^change_lang$"))
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_voice))
 
     logger.info("KokSarAi bot started.")
     app.run_polling(allowed_updates=["message", "callback_query"])
