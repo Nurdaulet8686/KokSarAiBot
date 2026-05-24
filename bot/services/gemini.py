@@ -62,7 +62,7 @@ AUDIO_QUOTA_EXCEEDED = "__AUDIO_QUOTA_EXCEEDED__"
 QUOTA_EXCEEDED = "__QUOTA_EXCEEDED__"
 
 # v1 — for gemini-1.5-flash (1500 req/day free)
-_client_v1 = genai.Client(api_key=GEMINI_API_KEY, http_options={"api_version": "v1"})
+_client_v1 = genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(api_version="v1"))
 # v1beta — for gemini-flash-latest audio support
 _client_v1beta = genai.Client(api_key=GEMINI_API_KEY)
 
