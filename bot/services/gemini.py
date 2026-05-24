@@ -5,6 +5,7 @@ from google.genai import types
 from config import GEMINI_API_KEY
 
 GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_AUDIO_MODEL = "gemini-flash-latest"
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,9 @@ Rules:
 _client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-def _generate(contents, config) -> str:
+def _generate(contents, config, model=None) -> str:
     response = _client.models.generate_content(
-        model=GEMINI_MODEL,
+        model=model or GEMINI_MODEL,
         contents=contents,
         config=config,
     )
@@ -102,7 +103,7 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
     instruction = f"{context_prefix}\n\nThis is a voice message. Listen to the audio, understand what the user said, and respond accordingly."
     contents = [
         types.Part.from_bytes(data=audio_bytes, mime_type="audio/ogg; codecs=opus"),
-        types.Part.from_text(text=instruction),
+        instruction,
     ]
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
@@ -112,7 +113,7 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
 
     try:
         loop = asyncio.get_running_loop()
-        text = await loop.run_in_executor(None, lambda: _generate(contents, config))
+        text = await loop.run_in_executor(None, lambda: _generate(contents, config, model=GEMINI_AUDIO_MODEL))
         return text
     except Exception as e:
         logger.error("Gemini audio error: %s", e)

@@ -28,12 +28,29 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     lang = context.user_data.get("lang", "ru")
+    topic = context.user_data.get("topic")
 
-    no_audio_msg = {
-        "kz": "🎤 Дауыстық хабарларды өңдеу уақытша қолжетімді емес. Мәтін арқылы жазыңыз немесе: @koksarai_support",
-        "ru": "🎤 Обработка голосовых сообщений временно недоступна. Напишите текстом или: @koksarai_support",
-    }
-    await update.message.reply_text(
-        no_audio_msg.get(lang, no_audio_msg["ru"]),
-        reply_markup=build_ai_response_keyboard(lang),
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action=ChatAction.TYPING,
     )
+
+    try:
+        voice = update.message.voice or update.message.audio
+        file = await context.bot.get_file(voice.file_id)
+        audio_bytes = await file.download_as_bytearray()
+        response = await get_response_from_audio(
+            audio_bytes=bytes(audio_bytes),
+            lang=lang,
+            topic=topic,
+        )
+    except Exception:
+        response = None
+
+    if response is None:
+        await update.message.reply_text(MESSAGES[lang]["ai_error"])
+    else:
+        await update.message.reply_text(
+            response,
+            reply_markup=build_ai_response_keyboard(lang),
+        )
