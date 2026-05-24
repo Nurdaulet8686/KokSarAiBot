@@ -84,7 +84,7 @@ async def get_response(user_message: str, lang: str = "ru", topic: str = None) -
     )
 
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         text = await loop.run_in_executor(None, lambda: _generate(user_content, config))
         return text
     except Exception as e:
@@ -109,7 +109,7 @@ async def get_response_from_audio(audio_bytes: bytes, lang: str = "ru", topic: s
     )
 
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         text = await loop.run_in_executor(None, lambda: _generate(contents, config))
         return text
     except Exception as e:
